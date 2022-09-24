@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Copyright © 2022 Jakub Wilk <jwilk@jwilk.net>
+# SPDX-License-Identifier: MIT
+
+set -e -u
+
+if [ $# -ne 1 ]
+then
+    printf 'Usage: %s HOMEDIR\n' "${0##*/}" >&2
+    exit 1
+fi
+
+here=$(cd -P "${0%/*}" && pwd)
+home=$(cd -P -- "$1" && pwd)
+set -x
+exec linux mem=256M rootfstype=hostfs init="$here/lib/init user_hostname=$(hostname) user_logname=$(whoami) user_rhome=$HOME user_home=$home user_term=$TERM"
+
+# vim:ts=4 sts=4 sw=4 et

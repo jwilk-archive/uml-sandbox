@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# Copyright © 2022 Jakub Wilk <jwilk@jwilk.net>
+# SPDX-License-Identifier: MIT
+
+set -eu
+set -x
+
+export TERM="${user_term}"
+unset user_term
+
+hostname "${user_hostname}-sandbox"
+unset user_hostname
+
+mount --bind /usr/lib/uml/modules /lib/modules
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+
+mount -t tmpfs tmpfs /run -o nosuid,nodev
+mkdir -m 1777 /run/lock /run/shm
+mount -t tmpfs tmpfs /run/lock -o nosuid,nodev
+mount -t tmpfs tmpfs /run/shm -o nosuid,nodev
+
+mount -t tmpfs tmpfs /tmp -o nosuid,nodev
+mount -t tmpfs tmpfs /var/tmp -o nosuid,nodev
+
+mount -t tmpfs tmpfs /srv -o ro,nosuid,nodev
+mount -t tmpfs tmpfs /media -o ro,nosuid,nodev
+
+mount -t tmpfs tmpfs /home
+mkdir -p "${user_home}"
+mount -t hostfs -o "${user_rhome}" hostfs "${user_home}"
+unset user_home user_rhome
+
+export LOGNAME="${user_logname}"
+unset user_logname
+
+exec mksh 0<>/dev/tty0 >&0 2>&0
+
+# vim:ts=4 sts=4 sw=4 et
